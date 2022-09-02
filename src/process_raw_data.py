@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 def label_student_group(row):
     r"""create student group label"""
     if row['academic_career'] == 'UG':
