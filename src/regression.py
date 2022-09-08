@@ -18,6 +18,8 @@ def create_regression_formula(features):
             formula = ' + '.join([formula, f"C({feature}, Treatment(5))"])
         elif feature == 'week':
             formula = ' + '.join([formula, f"C({feature}, Treatment(0))"])
+        elif feature == 'building':
+            formula = ' + '.join([formula, f"C({feature}, Treatment('Ganedago: Hall'))"])
         else:
             formula = ' + '.join([formula, f"C({feature})"])
     print(formula)
@@ -58,7 +60,7 @@ def run_gee_poisson(features, df, verbose=True):
         offset=np.log(df_pois['day']),
         update_dep=True,
     )
-    res = model.fit(maxiter=1000)
+    res = model.fit(maxiter=300)
     if verbose:
         print(res.summary())
     return res.params[1], res.conf_int().iloc[1], res.cov_struct.dep_params, res
