@@ -66,6 +66,26 @@ def run_gee_poisson(features, df, verbose=True):
     return res.params[1], res.conf_int().iloc[1], res.cov_struct.dep_params, res
 
 
+def run_gee_logistic(features, df, verbose=True):
+    """Run logistic regression with generalized estimating equations (GEE)."""
+    formula = create_regression_formula(features)
+    fam = sm.families.Binomial()
+    cov_struct = sm.cov_struct.Exchangeable()
+    model = smf.gee(
+        formula=formula,
+        data=df,
+        groups="employee_id_hash",
+        time="week",
+        cov_struct=cov_struct,
+        family=fam,
+        update_dep=True,
+    )
+    res= model.fit(maxiter=300)
+    if verbose:
+        print(res.summary())
+    return res.params[1], res.conf_int().iloc[1], res.cov_struct.dep_params, res
+
+
 def gen_result_summary(res):
     """Compute summarized regression results."""
     n_params = res.params.shape[0]
