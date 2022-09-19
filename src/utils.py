@@ -75,15 +75,19 @@ def plot_age_distribution(df=DATA_STUDENT_VAX):
 
 
 def plot_cumulative_incidence_rate(df=DATA_STUDENT_VAX, df_pos=DATA_STUDENT_CASES):
-    num_boosted = df[df['booster'] == 1].shape[0]
-    num_unboosted = df[df['booster'] == 0].shape[0]
+    df = df.copy()
+    df['date_received'] = pd.to_datetime(df['date_received'])
+    df['boosted_before'] = (df['date_received'] < OMICRON_START_DATE).astype(int)
+    num_boosted = df['boosted_before'].sum()
+    num_unboosted = df.shape[0] - num_boosted
 
     df_pos = df_pos.copy()
     df_pos['positive_test_date'] = pd.to_datetime(df_pos['positive_test_date'])
-    df_pos = df_pos.groupby(['booster', 'positive_test_date'])['case_number'].count() \
+    df_pos['boosted_before'] = (df_pos['date_received'] < OMICRON_START_DATE).astype(int)
+    df_pos = df_pos.groupby(['boosted_before', 'positive_test_date'])['case_number'].count() \
       .groupby(level=0).cumsum().reset_index()
     df_pos = df_pos.rename(columns={'case_number': 'num_cases'})
-    df_pos = df_pos.pivot(index='positive_test_date', columns='booster', values='num_cases')
+    df_pos = df_pos.pivot(index='positive_test_date', columns='boosted_before', values='num_cases')
     df_pos = df_pos.fillna(method='ffill').fillna(value=0)
     column_order = [1, 0]
     df_pos = df_pos.reindex(column_order, axis=1)
@@ -97,7 +101,7 @@ def plot_cumulative_incidence_rate(df=DATA_STUDENT_VAX, df_pos=DATA_STUDENT_CASE
     plt.xlabel("Date")
     plt.ylabel("Incidence rate")
     plt.ylim([0, 0.15])
-    plt.legend(['booster dose on or\nbefore 12/5/2021', 'unboosted or booster\ndose after 12/5/2021'])
+    plt.legend(['booster dose before 12/5/2021', 'unboosted/booster dose\non or after 12/5/2021'])
     plt.title("Cumulative incidence rate during the Omicron predominance period")
     plt.gcf().autofmt_xdate()
     plt.savefig(f"../figures/cumulative_incidence_rate.pdf", dpi=300)

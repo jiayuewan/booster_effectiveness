@@ -6,22 +6,39 @@ import statsmodels.formula.api as smf
 from statsmodels.stats.multitest import multipletests
 
 
-def create_regression_formula(features):
+def create_regression_formula(features, ref_categories=None):
     """Generates a regression formula with specified covariates."""
+    default_categories = {
+        'vac_type_agg': 'Pfizer',
+        'student_group': 'UG-other',
+        'last_dose_month': 5,
+        'week': 0,
+        'building': 'Building 25',
+    }
+
+    if ref_categories is not None:
+        default_categories.update(ref_categories)
+
     formula = "infection ~ 1"
     for feature in features:
-        if 'vac_type' in feature:
-            formula = ' + '.join([formula, f"C({feature}, Treatment('Pfizer'))"])
-        elif feature == 'student_group':
-            formula = ' + '.join([formula, f"C({feature}, Treatment('UG-other'))"])
-        elif feature == 'last_dose_month':
-            formula = ' + '.join([formula, f"C({feature}, Treatment(5))"])
-        elif feature == 'week':
-            formula = ' + '.join([formula, f"C({feature}, Treatment(0))"])
-        elif feature == 'building':
-            formula = ' + '.join([formula, f"C({feature}, Treatment('Ganedago: Hall'))"])
+        if feature in default_categories.keys():
+            ref = default_categories[feature]
+            ref = str(ref) if isinstance(ref, int) else f"'{ref}'"
+            formula = ' + '.join([formula, f"C({feature}, Treatment({ref}))"])
         else:
             formula = ' + '.join([formula, f"C({feature})"])
+        # if 'vac_type' in feature:
+        #     formula = ' + '.join([formula, f"C({feature}, Treatment('Pfizer'))"])
+        # elif feature == 'student_group':
+        #     formula = ' + '.join([formula, f"C({feature}, Treatment('UG-other'))"])
+        # elif feature == 'last_dose_month':
+        #     formula = ' + '.join([formula, f"C({feature}, Treatment(5))"])
+        # elif feature == 'week':
+        #     formula = ' + '.join([formula, f"C({feature}, Treatment(0))"])
+        # elif feature == 'building':
+        #     formula = ' + '.join([formula, f"C({feature}, Treatment('Ganedago: Hall'))"])
+        # else:
+        #     formula = ' + '.join([formula, f"C({feature})"])
     print(formula)
     return formula
 
@@ -44,10 +61,19 @@ def run_logistic_regression(features, df, verbose=True):
     return res.params[1], res.conf_int().iloc[1], res
 
 
+
+
 def run_gee_poisson(features, df, verbose=True):
     """Run Poisson regression with generalized estimating equations (GEE)."""
-    formula = create_regression_formula(features)
-    df_pois = df.groupby(["employee_id_hash"] + features, as_index=False).agg({'day': 'count', 'infection': 'max'})
+    if "building" in features:
+        ref_building = df.groupby('building')['employee_id_hash'].count().idxmax()
+        ref_categories = {"building": ref_building}
+        formula = create_regression_formula(features, ref_categories=ref_categories)
+    else:
+        formula = create_regression_formula(features)
+
+    groupby_features = features + ['week'] if 'week' not in features else features
+    df_pois = df.groupby(["employee_id_hash"] + groupby_features, as_index=False).agg({'day': 'count', 'infection': 'max'})
     fam = sm.families.Poisson()
     cov_struct = sm.cov_struct.Exchangeable()
     model = smf.gee(
