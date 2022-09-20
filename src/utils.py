@@ -118,7 +118,7 @@ def plot_booster_effectiveness_wrt_delay(arr):
     errors = np.transpose(np.concatenate((arr[:, 2:] - arr[:, 0:1], arr[:, 0:1] - arr[:, 1:2]), axis=1))
     x_pos = np.arange(len(delays))
     ax.errorbar(x_pos, arr[:, 0], yerr=errors, alpha=1, ecolor='black', label='mean', capsize=10, marker='o')
-    ax.set_ylabel('1 - adjusted odds ratio')
+    ax.set_ylabel('1 - adjusted incidence rate ratio')
     ax.set_xticks(x_pos)
     ax.set_xlabel('Delay for the booster to become effective (days)')
     ax.set_xticklabels(delays)
