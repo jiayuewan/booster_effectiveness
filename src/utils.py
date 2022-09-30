@@ -122,7 +122,7 @@ def plot_booster_effectiveness_wrt_delay(arr):
     ax.set_xticks(x_pos)
     ax.set_xlabel('Delay for the booster to become effective (days)')
     ax.set_xticklabels(delays)
-    ax.set_title('Booster effectiveness against Omicron')
+    ax.set_title('Booster effectiveness against infection')
     ax.yaxis.grid(True)
     ax.set_ylim(bottom=0)
 
