@@ -2,6 +2,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy.stats as st
 
 
 OMICRON_START_DATE = '2021-12-05'
@@ -80,7 +81,6 @@ def plot_cumulative_incidence_rate(df=DATA_STUDENT_VAX, df_pos=DATA_STUDENT_CASE
     df['boosted_before'] = (df['date_received'] < OMICRON_START_DATE).astype(int)
     num_boosted = df['boosted_before'].sum()
     num_unboosted = df.shape[0] - num_boosted
-
     df_pos = df_pos.copy()
     df_pos['positive_test_date'] = pd.to_datetime(df_pos['positive_test_date'])
     df_pos['boosted_before'] = (df_pos['date_received'] < OMICRON_START_DATE).astype(int)
@@ -91,13 +91,30 @@ def plot_cumulative_incidence_rate(df=DATA_STUDENT_VAX, df_pos=DATA_STUDENT_CASE
     df_pos = df_pos.fillna(method='ffill').fillna(value=0)
     column_order = [1, 0]
     df_pos = df_pos.reindex(column_order, axis=1)
-    df_pos[0] = df_pos[0] / num_unboosted
-    df_pos[1] = df_pos[1] / num_boosted
 
     plt.figure(figsize=(8, 6), dpi=300)
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=5))
-    plt.plot(df_pos)
+
+    # cumulative incidence
+    plt.plot(df_pos[1] / num_boosted, color='#3B75B0')
+    plt.plot(df_pos[0] / num_unboosted, color='#EF8636')
+
+    # confidence interval for cumulative incidence (Clopper-Pearson method)
+    alpha = 0.05
+    plt.fill_between(
+        x=df_pos.index,
+        y1=st.beta.ppf(1 - alpha / 2, df_pos[0] + 1, num_unboosted - df_pos[0]),
+        y2=st.beta.ppf(alpha / 2, df_pos[0], num_unboosted - df_pos[0] + 1),
+        color='#FAE6D0'
+    )
+    plt.fill_between(
+        x=df_pos.index,
+        y1=st.beta.ppf(1 - alpha / 2, df_pos[1] + 1, num_boosted - df_pos[1]),
+        y2=st.beta.ppf(alpha / 2, df_pos[1], num_boosted - df_pos[1] + 1),
+        color='#D8E2EF'
+    )
+
     plt.xlabel("Date")
     plt.ylabel("Incidence rate")
     plt.ylim([0, 0.15])
