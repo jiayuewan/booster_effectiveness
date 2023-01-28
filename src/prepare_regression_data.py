@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 from datetime import datetime, timedelta
 import os
 import pandas as pd
@@ -10,7 +15,15 @@ DATA_STUDENT_CASES = pd.read_csv(f"../data/data_student_cases.csv")
 
 
 def process_positive_case_data_indiv_day(data_student_cases=DATA_STUDENT_CASES, booster_delay=7):
-    """Generate person-day level dataframe for positive cases."""
+    r"""Generate person-day level dataframe for positive cases.
+
+    Args:
+        data_student_cases: dataframe of positive student cases.
+        booster_delay: assumed delay in days for the booster to become effective after administration.
+
+    Returns:
+        A data frame of person days associated with positive student cases.
+    """
     df = pd.DataFrame(columns=data_student_cases.columns)
     df['booster'] = None
     df['infection'] = None
@@ -79,7 +92,16 @@ def process_negative_case_data_indiv_day(
     data_student_cases=DATA_STUDENT_CASES,
     booster_delay=7,
 ):
-    """Generate person-day level dataframe for negative cases."""
+    r"""Generate person-day level dataframe for negative cases.
+
+    Args:
+        data_student_vax: dataframe of the study population.
+        data_student_cases: dataframe of positive student cases.
+        booster_delay: assumed delay in days for the booster to become effective after administration.
+
+    Returns:
+        A data frame of person days associated with student not infected during the study period.
+    """
     ids = list(data_student_cases.netid_hash)
     df = pd.DataFrame(columns=data_student_vax.columns)
     df['booster'] = None
@@ -157,7 +179,16 @@ def save_aggregated_indiv_day_data(
     data_student_cases=DATA_STUDENT_CASES,
     booster_delay=7,
 ):
-    """Generates a person-day level dataframe to be used in regression analyses."""
+    r"""Generates a person-day level dataframe to be used in regression analyses.
+
+    Args:
+        data_student_vax: dataframe of the study population.
+        data_student_cases: dataframe of positive student cases.
+        booster_delay: assumed delay in days for the booster to become effective after administration.
+
+    Returns:
+        A data frame of person days associated with the study population.
+    """
     process_positive_case_data_indiv_day(
         data_student_cases=data_student_cases,
         booster_delay=booster_delay,

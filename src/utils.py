@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,70 +16,7 @@ DATA_STUDENT_VAX = pd.read_csv(f"../data/data_student_vax.csv")
 DATA_STUDENT_CASES = pd.read_csv(f"../data/data_student_cases.csv")
 
 
-def plot_num_person_days(df=DATA_STUDENT_VAX):
-    num_person_days = df.num_person_days
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
-    plt.hist(num_person_days, bins=np.arange(0, 30, 2))
-    plt.xticks(np.arange(0, 30, 2))
-    plt.xlabel('Num of person-days')
-    plt.ylabel('Number of students')
-    plt.title('Distribution of the number of person-days contributed')
-    ax.yaxis.grid(True)
-
-    plt.tight_layout()
-    plt.savefig(f'../figures/person_day_distribution.pdf', dpi=300)
-    plt.savefig(f'../figures/person_day_distribution.jpg', dpi=300)
-    plt.savefig(f'../figures/person_day_distribution.eps', dpi=300)
-    print("Plot of person_day_distribution saved to ../figures/")
-    plt.show()
-    plt.close()
-
-
-def plot_cumulative_booster_count(df=DATA_STUDENT_VAX):
-    df = df[df['date_received'].notnull()]
-    df['date_received'] = pd.to_datetime(df['date_received'])
-    df = df.groupby(['date_received'])['netid_hash'].count().cumsum().reset_index()
-    df = df.rename(columns={'netid_hash': 'cum_num_students_boosted'})
-    df = df[df['date_received'] <= OMICRON_END_DATE]
-
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
-    plt.plot(df['date_received'], df['cum_num_students_boosted'])
-    plt.axvspan(pd.Timestamp(OMICRON_START_DATE), pd.Timestamp(OMICRON_END_DATE), color="#c6fcff")
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=14))
-    plt.xlabel("Date")
-    plt.ylabel("Number of students")
-    plt.title("Cumulative number of students receiving booster dose over time")
-    plt.legend(['cumulative booster dose count','Omicron predominance period'])
-    plt.gcf().autofmt_xdate()
-    plt.savefig(f"../figures/cumulative_booster_count.pdf", dpi=300)
-    plt.savefig(f"../figures/cumulative_booster_count.jpg", dpi=300)
-    plt.savefig(f"../figures/cumulative_booster_count.eps", dpi=300)
-    print("Plot of cumulative booster count saved to ../figures/")
-    plt.show()
-    plt.close()
-
-
-def plot_age_distribution(df=DATA_STUDENT_VAX):
-    ages = 2021 - df.dob_year
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
-
-    plt.hist(ages, bins=np.arange(16, 38, 2))
-    plt.xticks(np.arange(16, 36, 2))
-    plt.xlabel('Age (years)')
-    plt.ylabel('Number of students')
-    plt.title('Age distribution of the students')
-    ax.yaxis.grid(True)
-
-    plt.tight_layout()
-    plt.savefig(f'../figures/age_distribution.pdf')
-    plt.savefig(f'../figures/age_distribution.jpg')
-    plt.savefig(f'../figures/age_distribution.eps')
-    print("Plot of cumulative booster count saved to ../figures/")
-    plt.show()
-    plt.close()
-
-
+# Fig 2
 def plot_cumulative_incidence_rate(df=DATA_STUDENT_VAX, df_pos=DATA_STUDENT_CASES):
     df = df.copy()
     df['date_received'] = pd.to_datetime(df['date_received'])
@@ -129,6 +71,74 @@ def plot_cumulative_incidence_rate(df=DATA_STUDENT_VAX, df_pos=DATA_STUDENT_CASE
     plt.close()
 
 
+# Fig A, S1 Appendix
+def plot_num_person_days(df=DATA_STUDENT_VAX):
+    num_person_days = df.num_person_days
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+    plt.hist(num_person_days, bins=np.arange(0, 30, 2))
+    plt.xticks(np.arange(0, 30, 2))
+    plt.xlabel('Num of person-days')
+    plt.ylabel('Number of students')
+    plt.title('Distribution of the number of person-days contributed')
+    ax.yaxis.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(f'../figures/person_day_distribution.pdf', dpi=300)
+    plt.savefig(f'../figures/person_day_distribution.jpg', dpi=300)
+    plt.savefig(f'../figures/person_day_distribution.eps', dpi=300)
+    print("Plot of person_day_distribution saved to ../figures/")
+    plt.show()
+    plt.close()
+
+
+# Fig C, S1 Appendix
+def plot_age_distribution(df=DATA_STUDENT_VAX):
+    ages = 2021 - df.dob_year
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+
+    plt.hist(ages, bins=np.arange(16, 38, 2))
+    plt.xticks(np.arange(16, 36, 2))
+    plt.xlabel('Age (years)')
+    plt.ylabel('Number of students')
+    plt.title('Age distribution of the students')
+    ax.yaxis.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(f'../figures/age_distribution.pdf')
+    plt.savefig(f'../figures/age_distribution.jpg')
+    plt.savefig(f'../figures/age_distribution.eps')
+    print("Plot of cumulative booster count saved to ../figures/")
+    plt.show()
+    plt.close()
+
+
+# Fig D, S1 Appendix
+def plot_cumulative_booster_count(df=DATA_STUDENT_VAX):
+    df = df[df['date_received'].notnull()]
+    df['date_received'] = pd.to_datetime(df['date_received'])
+    df = df.groupby(['date_received'])['netid_hash'].count().cumsum().reset_index()
+    df = df.rename(columns={'netid_hash': 'cum_num_students_boosted'})
+    df = df[df['date_received'] <= OMICRON_END_DATE]
+
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+    plt.plot(df['date_received'], df['cum_num_students_boosted'])
+    plt.axvspan(pd.Timestamp(OMICRON_START_DATE), pd.Timestamp(OMICRON_END_DATE), color="#c6fcff")
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=14))
+    plt.xlabel("Date")
+    plt.ylabel("Number of students")
+    plt.title("Cumulative number of students receiving booster dose over time")
+    plt.legend(['cumulative booster dose count','Omicron predominance period'])
+    plt.gcf().autofmt_xdate()
+    plt.savefig(f"../figures/cumulative_booster_count.pdf", dpi=300)
+    plt.savefig(f"../figures/cumulative_booster_count.jpg", dpi=300)
+    plt.savefig(f"../figures/cumulative_booster_count.eps", dpi=300)
+    print("Plot of cumulative booster count saved to ../figures/")
+    plt.show()
+    plt.close()
+
+
+# Fig E, S1 Appendix
 def plot_booster_effectiveness_wrt_delay(arr):
     fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
     delays = list(range(1, 15))

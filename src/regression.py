@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import numpy as np
 import pandas as pd
 import scipy.stats as st
@@ -7,7 +12,16 @@ from statsmodels.stats.multitest import multipletests
 
 
 def create_regression_formula(features, ref_categories=None):
-    """Generates a regression formula with specified covariates."""
+    r"""Generates a regression formula with specified covariates.
+
+    Args:
+        features: A list of features to be used in the regression.
+        ref_categories: Optional, a dictionary indicating the reference categories
+            for the features.
+
+    Returns:
+        A str of regression formula to be passed in to the regression model.
+    """
     default_categories = {
         'vac_type_agg': 'Pfizer',
         'student_group': 'UG-other',
@@ -27,24 +41,13 @@ def create_regression_formula(features, ref_categories=None):
             formula = ' + '.join([formula, f"C({feature}, Treatment({ref}))"])
         else:
             formula = ' + '.join([formula, f"C({feature})"])
-        # if 'vac_type' in feature:
-        #     formula = ' + '.join([formula, f"C({feature}, Treatment('Pfizer'))"])
-        # elif feature == 'student_group':
-        #     formula = ' + '.join([formula, f"C({feature}, Treatment('UG-other'))"])
-        # elif feature == 'last_dose_month':
-        #     formula = ' + '.join([formula, f"C({feature}, Treatment(5))"])
-        # elif feature == 'week':
-        #     formula = ' + '.join([formula, f"C({feature}, Treatment(0))"])
-        # elif feature == 'building':
-        #     formula = ' + '.join([formula, f"C({feature}, Treatment('Ganedago: Hall'))"])
-        # else:
-        #     formula = ' + '.join([formula, f"C({feature})"])
     print(formula)
     return formula
 
 
+# deprecated
 def run_logistic_regression(features, df, verbose=True):
-    """Run logistic regression.
+    r"""Run a logistic regression.
 
     Args:
         features: potential confounding variables for the regression.
@@ -61,10 +64,17 @@ def run_logistic_regression(features, df, verbose=True):
     return res.params[1], res.conf_int().iloc[1], res
 
 
-
-
 def run_gee_poisson(features, df, verbose=True):
-    """Run Poisson regression with generalized estimating equations (GEE)."""
+    r"""Run a Poisson regression with generalized estimating equations (GEE).
+
+    Args:
+        features: potential confounding variables to be included as features
+            for the regression.
+        df: A pandas dataframe used for regression.
+
+    Returns:
+        Regression results.
+    """
     if "building" in features:
         ref_building = df.groupby('building')['employee_id_hash'].count().idxmax()
         ref_categories = {"building": ref_building}
@@ -93,7 +103,16 @@ def run_gee_poisson(features, df, verbose=True):
 
 
 def run_gee_logistic(features, df, verbose=True):
-    """Run logistic regression with generalized estimating equations (GEE)."""
+    r"""Run a logistic regression with generalized estimating equations (GEE).
+
+    Args:
+        features: potential confounding variables to be included as features
+            for the regression.
+        df: A pandas dataframe used for regression.
+
+    Returns:
+        Regression results.
+    """
     formula = create_regression_formula(features)
     fam = sm.families.Binomial()
     cov_struct = sm.cov_struct.Exchangeable()
@@ -113,7 +132,17 @@ def run_gee_logistic(features, df, verbose=True):
 
 
 def gen_result_summary(res):
-    """Compute summarized regression results."""
+    r"""Compute summarized regression results.
+
+    Args:
+        res: regression results from the fitted model.
+
+    Return:
+        A dataframe of coefficients (`coeff`), standard errors (`SE`), p-values
+        (`p-value`), p-values adjusted using bonferroni correction (`adj p-value`),
+        adjusted rate ratio (`aOR`), 95% confidence interval for the adjusted rate ratio
+        (`aOR lower` and `aOR upper`).
+    """
     n_params = res.params.shape[0]
     summary = res.params.to_frame(name='coeff')
     summary['SE'] = res.bse
@@ -131,7 +160,7 @@ def gen_result_summary(res):
 
 
 def run_delay_sensitivity_analysis(regression_runner, features):
-    """Perform sensitivity analysis on delay for the booster to become effectiveness.
+    r"""Perform sensitivity analysis on delay for the booster to become effectiveness.
 
     Args:
         regression_runner: A callable running a regression.
