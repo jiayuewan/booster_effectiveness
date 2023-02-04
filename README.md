@@ -3,7 +3,7 @@
 This is the code repository for our paper: *Booster vaccination protection against SARS-CoV-2 infections in young adults during an Omicron-predominant period: a retrospective cohort study*, published in *PLOS Medicine*. 
 
 ### Citation for the paper
-> Wan J, Cazer CL, Clarkberg ME, Henderson SG, Lee SE, et al. (2023) Booster vaccination protection against SARS-CoV-2 infections in young adults during an Omicron BA.1-predominant period: A retrospective cohort study. PLOS Medicine 20(1): e1004153. https://doi.org/10.1371/journal.pmed.1004153
+> Wan J, Cazer CL, Clarkberg ME, Henderson SG, Lee SE, et al. (2023) Booster vaccination protection against SARS-CoV-2 infections in young adults during an Omicron BA.1-predominant period: A retrospective cohort study. *PLOS Medicine* 20(1): e1004153. https://doi.org/10.1371/journal.pmed.1004153
 
 ```
 @article{10.1371/journal.pmed.1004153,
